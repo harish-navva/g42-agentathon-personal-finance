@@ -151,7 +151,7 @@ CREWAI_TELEMETRY_OPT_OUT=true      # suppress CrewAI telemetry SSL warnings
 
 ```bash
 # 1. Clone the repository
-git clone <your-repo-url>
+git clone https://github.com/harish-navva/g42-agentathon-personal-finance.git
 cd g42-personal-finance-agent
 
 # 2. Create a Python 3.11+ virtual environment
