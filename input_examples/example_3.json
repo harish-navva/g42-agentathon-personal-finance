@@ -1,0 +1,11 @@
+{
+  "query": "Where can I cut my monthly expenses without hurting my family's lifestyle?",
+  "context": {
+    "user_id": "karim_mansour_001",
+    "csv_files": [
+      "data/ADCB_Savings_KarimMansour.csv",
+      "data/ADCB_CreditCard_KarimMansour.csv"
+    ],
+    "profile_file": "data/user_profile.json"
+  }
+}

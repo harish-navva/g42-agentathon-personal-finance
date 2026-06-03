@@ -1,0 +1,11 @@
+{
+  "query": "Can I buy a 60,000 AED car in 3 months?",
+  "context": {
+    "user_id": "karim_mansour_001",
+    "csv_files": [
+      "data/ADCB_Savings_KarimMansour.csv",
+      "data/ADCB_CreditCard_KarimMansour.csv"
+    ],
+    "profile_file": "data/user_profile.json"
+  }
+}

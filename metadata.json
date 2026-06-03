@@ -1,0 +1,61 @@
+{
+  "use_case_id": "24",
+  "project_name": "Karim's Money - Personal Finance Agent for UAE Residents",
+  "team": "Solo Builder",
+  "description": "Multi-agent personal finance assistant that analyzes UAE bank statements (ADCB CSV format) and answers real-life money questions for expat families. Includes voice input via Compass Whisper, persistent question history, and a live agent activity panel showing critique loops between agents.",
+  "agents": [
+    {
+      "name": "Expense Analyzer",
+      "role": "Parses ADCB CSV bank statements, categorizes spend by merchant rules, computes monthly financial summary"
+    },
+    {
+      "name": "Risk Profiler",
+      "role": "Builds risk tolerance from income stability, dependents, employment tenure, and emergency buffer; critiques aggressive plans; flags expat visa-runway risk"
+    },
+    {
+      "name": "Goal Planner",
+      "role": "Classifies user query (goal_purchase / vacation / cut_expenses); drafts a costed plan; revises in response to Risk Profiler's critique"
+    },
+    {
+      "name": "Investment Advisor",
+      "role": "Matches risk band to UAE-specific products including Sharia-compliant options (ADCB Active Saver, DIB Sukuk, Sarwa)"
+    },
+    {
+      "name": "Compliance Recommender",
+      "role": "Synthesizes final user-facing answer; enforces SCA-compliant disclaimer; veto authority over plans that breach emergency-fund minimums"
+    }
+  ],
+  "tools_used": [
+    "crewai",
+    "crewai-tools",
+    "openai-sdk",
+    "compass-api",
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "pandas",
+    "Web Audio API (browser-side WAV encoding)"
+  ],
+  "compass_models": [
+    "gpt-4.1",
+    "gpt-5.1",
+    "whisper"
+  ],
+  "data_sources": [
+    "Synthetic ADCB-format bank statements (CSV) in data/",
+    "User profile JSON (data/user_profile.json)",
+    "User-uploaded CSV via POST /upload-csv (production path)",
+    "Voice input via POST /transcribe (Compass Whisper)"
+  ],
+  "endpoints": [
+    "POST /run",
+    "GET /health",
+    "GET /data-files",
+    "POST /upload-csv",
+    "POST /transcribe",
+    "GET /history",
+    "POST /history",
+    "DELETE /history"
+  ],
+  "output_type": "structured JSON with multi-agent trace"
+}

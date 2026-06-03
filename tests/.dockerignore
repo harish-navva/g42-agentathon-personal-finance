@@ -1,0 +1,45 @@
+# Never bake into image
+.env
+.env.local
+*.key
+*.pem
+
+# Python build artefacts
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.coverage
+htmlcov
+
+# Virtual envs (use the container's clean install)
+.venv
+venv
+env
+
+# IDE / OS
+.idea
+.vscode
+*.swp
+.DS_Store
+Thumbs.db
+
+# Version control
+.git
+.gitignore
+
+# Local logs (the container creates fresh ones)
+logs/*.jsonl
+logs/*.log
+
+# Documentation source (build artefacts ok)
+docs/_build
+
+# Frontend zip / packaging
+frontend_zip
+*.zip
+
+# Test outputs
+test.wav
+*.tmp

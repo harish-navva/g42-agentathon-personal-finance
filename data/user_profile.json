@@ -1,0 +1,43 @@
+{
+  "user_id": "karim_mansour_001",
+  "name": "Karim Mansour",
+  "age": 36,
+  "nationality": "Egyptian",
+  "residency_status": "expat",
+  "marital_status": "married",
+  "dependents": 1,
+  "dependent_details": [
+    { "relation": "spouse", "age": 33, "employed": false },
+    { "relation": "son", "age": 5, "school": "Stepping Stones Nursery JVC" }
+  ],
+  "employment": {
+    "employer": "Middle East Foods LLC",
+    "role": "Marketing Manager",
+    "industry": "FMCG",
+    "type": "private_sector",
+    "tenure_years": 2,
+    "monthly_salary_aed": 22000
+  },
+  "housing": {
+    "type": "rental",
+    "location": "JVC, Dubai",
+    "annual_rent_aed": 90000,
+    "rent_payment_schedule": "quarterly"
+  },
+  "vehicle": {
+    "owned": true,
+    "type": "Toyota Camry",
+    "financed": true,
+    "monthly_emi_aed": 1800,
+    "remaining_loan_months": 24
+  },
+  "preferences": {
+    "sharia_compliant_only": false,
+    "remittance_target_country": "Egypt",
+    "monthly_remittance_aed": 1000
+  },
+  "accounts": [
+    { "bank": "ADCB", "type": "savings", "csv": "ADCB_Savings_KarimMansour.csv" },
+    { "bank": "ADCB", "type": "credit_card", "csv": "ADCB_CreditCard_KarimMansour.csv" }
+  ]
+}

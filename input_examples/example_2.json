@@ -1,0 +1,11 @@
+{
+  "query": "When is the best time for me to take a family vacation in the next 6 months, and what's a realistic budget?",
+  "context": {
+    "user_id": "karim_mansour_001",
+    "csv_files": [
+      "data/ADCB_Savings_KarimMansour.csv",
+      "data/ADCB_CreditCard_KarimMansour.csv"
+    ],
+    "profile_file": "data/user_profile.json"
+  }
+}
