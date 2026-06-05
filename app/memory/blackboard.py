@@ -21,8 +21,13 @@ LOGS_DIR.mkdir(exist_ok=True)
 
 
 class Blackboard:
-    def __init__(self, run_id: str | None = None):
+    def __init__(self, run_id: str | None = None,
+                 on_event: "callable | None" = None):
         self.run_id = run_id or uuid.uuid4().hex[:12]
+        # Optional callback invoked for every trace record (used to stream
+        # agent activity live to the UI). Must be thread-safe — the streaming
+        # endpoint typically dispatches the event onto an asyncio loop.
+        self.on_event = on_event
         self.state: dict[str, Any] = {
             "user_profile": None,
             "transactions": None,
@@ -105,6 +110,13 @@ class Blackboard:
             f.write(json.dumps(record, default=str) + "\n")
         # keep in memory for API
         self.trace_events.append(record)
+        # push to live subscribers (e.g. SSE/NDJSON stream)
+        if self.on_event is not None:
+            try:
+                self.on_event(record)
+            except Exception:
+                # never let a streaming consumer break the agent run
+                pass
 
 
 def _now():

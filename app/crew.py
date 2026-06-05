@@ -78,19 +78,23 @@ def classify_query(query: str) -> str:
 # Main entry point
 # ---------------------------------------------------------------------------
 
-def run_crew(query: str, context: dict | None = None) -> dict:
+def run_crew(query: str, context: dict | None = None,
+             on_event: "callable | None" = None) -> dict:
     """
     Execute the full multi-agent workflow for a single user query.
 
     Args:
         query: the user's question
         context: dict with optional keys: csv_files, profile_file, user_id
+        on_event: optional callback invoked for every trace event as it
+                  happens. Used by the /run-stream endpoint to push live
+                  agent activity to the UI.
 
     Returns:
         dict with: answer, agents_involved, trace_path, sample_mode,
                    findings, elapsed_seconds
     """
-    bb = Blackboard()
+    bb = Blackboard(on_event=on_event)
     started = time.time()
     context = context or {}
 

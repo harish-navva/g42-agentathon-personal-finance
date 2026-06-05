@@ -50,4 +50,10 @@ if __name__ == "__main__":
         webbrowser.open(url)
     except Exception:
         pass
-    HTTPServer(("0.0.0.0", PORT), UIRequestHandler).serve_forever()
+    server = HTTPServer(("0.0.0.0", PORT), UIRequestHandler)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\n[ui]  Shutting down (Ctrl+C)…")
+    finally:
+        server.server_close()

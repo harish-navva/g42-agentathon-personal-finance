@@ -387,17 +387,92 @@ async function askAgents() {
 
   try {
     const t0 = Date.now();
-    const resp = await fetch(`${API_BASE}/run`, {
+    const resp = await fetch(`${API_BASE}/run-stream`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
-    if (!resp.ok) {
-      const text = await resp.text();
+    if (!resp.ok || !resp.body) {
+      const text = resp.body ? await resp.text() : "";
       throw new Error(`HTTP ${resp.status}: ${text}`);
     }
-    const data = await resp.json();
+
+    // Reset feed for live appending; activity items will arrive one-by-one
+    // as agents emit them on the server.
+    resetActivityFeed();
+    document.getElementById("activity-feed").innerHTML = "";
+    document.getElementById("activity-counter").textContent = "0 events";
+
+    let data = null;
+    let streamError = null;
+    let liveCount = 0;
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    const handleMessage = (msg) => {
+      if (msg.type === "event") {
+        const ev = msg.event || {};
+        const action = (ev.action || "").toLowerCase();
+        // Skip the noisy bulk-data writes, like the post-run animator did
+        if (action === "write_blackboard" &&
+          (ev.key === "transactions" || ev.key === "user_profile")) {
+          return;
+        }
+        appendActivityItem(ev);
+        liveCount++;
+        document.getElementById("activity-counter").textContent =
+          `${liveCount} event${liveCount === 1 ? "" : "s"}`;
+
+        const key = NAME_TO_KEY[ev.agent_name];
+        if (key) lightUpDot(key);
+
+        // When any agent finishes its phase, mark its dot as done so the
+        // top-bar status mirrors the live progression.
+        if (action.includes("complete") || action.includes("approved") ||
+          action.includes("ready") || action === "skipped") {
+          if (key) markDotDone(key);
+        }
+
+        // Keep the dashboard fresh as soon as the analyzer publishes its summary
+        if (ev.action === "write_blackboard" && ev.key === "financial_summary") {
+          // The summary itself isn't in the event payload, but we'll get it
+          // again in the final "result" message. Just nudge the status text.
+          setStatusText("Expense Analyzer ready");
+        }
+      } else if (msg.type === "result") {
+        data = msg.data;
+      } else if (msg.type === "error") {
+        streamError = msg.error || "Unknown stream error";
+      }
+    };
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      let nl;
+      while ((nl = buffer.indexOf("\n")) >= 0) {
+        const line = buffer.slice(0, nl).trim();
+        buffer = buffer.slice(nl + 1);
+        if (!line) continue;
+        try {
+          handleMessage(JSON.parse(line));
+        } catch (err) {
+          console.warn("Bad NDJSON line:", line, err);
+        }
+      }
+    }
+    if (buffer.trim()) {
+      try { handleMessage(JSON.parse(buffer.trim())); } catch (e) { /* ignore */ }
+    }
+
+    if (streamError) throw new Error(streamError);
+    if (!data) throw new Error("Stream ended without a result");
+
     lastRunData = data;
     const elapsed = ((Date.now() - t0) / 1000).toFixed(2);
 
@@ -407,9 +482,9 @@ async function askAgents() {
       updateDashboard(data.findings.financial_summary);
     }
 
-    await sleep(400);
+    await sleep(200);
     hideThinkingState();
-    await animateTraceEvents(data.trace_events || []);
+    AGENT_ORDER.forEach(markDotDone);
 
     renderAnswer(data.answer, data.agents_involved, elapsed,
       data.sample_mode, data.use_case_id, data.findings);

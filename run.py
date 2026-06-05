@@ -22,7 +22,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Body
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 import uvicorn
 
 from app.config import Config
@@ -113,6 +113,77 @@ async def run(request: RunRequest):
                 "hint": "Check the trace file in /logs/ for the failure point.",
             },
         )
+
+
+# ---------------------------------------------------------------------------
+# Streaming run (NDJSON) - pushes each agent event live to the UI as it
+# happens, instead of waiting for the full run to complete.
+# Each line is one JSON object:
+#   {"type": "event", "event": {...trace record...}}
+#   {"type": "result", "data": {...full RunResponse payload...}}
+#   {"type": "error",  "error": "...message..."}
+# ---------------------------------------------------------------------------
+
+@app.post("/run-stream")
+async def run_stream(request: RunRequest):
+    log.info(f"Received streaming query: {request.query[:100]}")
+
+    queue: asyncio.Queue = asyncio.Queue()
+    loop = asyncio.get_running_loop()
+    SENTINEL = object()
+
+    def on_event(record: dict) -> None:
+        # Called from the worker thread. Hop back onto the event loop
+        # to enqueue safely.
+        loop.call_soon_threadsafe(queue.put_nowait,
+                                  {"type": "event", "event": record})
+
+    async def runner() -> None:
+        try:
+            ctx = request.context.model_dump() if request.context else None
+            result = await asyncio.to_thread(
+                run_crew, request.query, ctx, on_event,
+            )
+            payload = {
+                "use_case_id": "24",
+                "query": request.query,
+                "answer": result["answer"],
+                "agents_involved": result["agents_involved"],
+                "trace_path": result["trace_path"],
+                "elapsed_seconds": result["elapsed_seconds"],
+                "sample_mode": result["sample_mode"],
+                "findings": result["findings"],
+                "trace_events": result.get("trace_events", []),
+            }
+            await queue.put({"type": "result", "data": payload})
+        except FileNotFoundError as exc:
+            await queue.put({"type": "error", "error": f"FileNotFound: {exc}"})
+        except Exception as exc:  # noqa: BLE001
+            log.exception("Streaming agent run failed")
+            await queue.put({
+                "type": "error",
+                "error": f"{type(exc).__name__}: {exc}",
+            })
+        finally:
+            await queue.put(SENTINEL)
+
+    asyncio.create_task(runner())
+
+    async def ndjson_stream():
+        while True:
+            item = await queue.get()
+            if item is SENTINEL:
+                break
+            yield json.dumps(item, default=str) + "\n"
+
+    return StreamingResponse(
+        ndjson_stream(),
+        media_type="application/x-ndjson",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",   # disable proxy buffering
+        },
+    )
 
 
 # ---------------------------------------------------------------------------
