@@ -278,10 +278,10 @@ The UI exposes the full trace via a **"View full agent trace"** modal with a **"
 
 ## 16. Demo Video
 
-Demo video: [Insert viewable link here]
-Backup demo video: [Insert backup link here]
+**Demo video:** https://youtu.be/miuIrW_kdds
+**Backup demo video:** https://drive.google.com/file/d/1KrgIrNtbPFr_MY33CFWnF-KexOikYYbW/view?usp=drivesdk
 
-The video shows the problem, the 5-agent flow with live critique loop, a `/run` invocation, the structured output, and the production deployment path.
+The video shows the problem statement, the 5-agent flow with live critique loop, a real `POST /run` invocation, the structured output with options + investment recommendations, and the production deployment path. Total length: ~3:15.
 
 ## 17. Known Limitations
 
