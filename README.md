@@ -195,7 +195,7 @@ docker build -t g42-personal-finance-agent .
 # Run with Compass env vars
 docker run --rm -p 8000:8000 \
   -e OPENAI_API_KEY="$OPENAI_API_KEY" \
-  -e OPENAI_BASE_URL="https://compass.core42.ai/v1" \
+  -e OPENAI_BASE_URL="https://api.core42.ai/v1 " \
   -e SAMPLE_MODE=false \
   g42-personal-finance-agent
 
